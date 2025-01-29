@@ -1,68 +1,68 @@
-# AMZN Stock Forecasting with Airflow and HGBR
+ # AMZN Stock Forecasting with Airflow and HGBR
 
 ## 📌 Project Overview
-This project builds an **automated machine learning pipeline** for predicting **Amazon (AMZN) stock prices** using **Apache Airflow** and **HistGradientBoostingRegressor (HGBR)**. The pipeline:
-- Extracts **AMZN** stock market data from the **Alpha Vantage API**.
-- Processes the data and computes **technical indicators** (SMA, RSI, volatility, OBV).
-- Trains an ML model using **HGBR** with **hyperparameter tuning**.
-- Generates stock price **predictions**.
-- Visualizes **actual vs predicted prices**, including model **test metrics (R², MSE, MAE)**.
+This project automates stock price prediction for **Amazon (AMZN)** using **Apache Airflow**, **Docker**, and **HistGradientBoostingRegressor (HGBR)**. The pipeline:
+- Retrieves stock data from the **Alpha Vantage API**.
+- Computes **technical indicators** (SMA, RSI, volatility, OBV).
+- Trains an ML model with **HGBR and hyperparameter tuning**.
+- Predicts stock prices and evaluates model performance.
+- Generates a **visual comparison** of actual vs. predicted prices with key metrics (**R², MSE, MAE**).
 
-The workflow is **containerized with Docker**, ensuring **reproducibility** and **easy deployment**.
+The workflow is fully **containerized using Docker**, ensuring **scalability, reproducibility, and easy deployment**.
 
 ---
 
 ## 📌 Data Source: Alpha Vantage API
-We retrieve **daily stock price data** from the [Alpha Vantage API](https://www.alphavantage.co/documentation/), using the `TIME_SERIES_DAILY` function.
+The pipeline fetches **daily stock price data** from [Alpha Vantage API](https://www.alphavantage.co/documentation/) using the `TIME_SERIES_DAILY` function.
 
 ### **Example API Request**
 ```bash
 https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=AMZN&apikey=YOUR_API_KEY&outputsize=full&datatype=json
 ```
 **Extracted Features:**
-- **Raw data:** `open`, `high`, `low`, `close`, `volume`
+- **Market data:** `open`, `high`, `low`, `close`, `volume`
 - **Computed indicators:** `SMA (7 & 14 days)`, `volatility`, `RSI`, `OBV`
 
-To use the API, get a **free API key** from [Alpha Vantage](https://www.alphavantage.co/support/#api-key).
+To use the API, obtain a **free API key** from [Alpha Vantage](https://www.alphavantage.co/support/#api-key).
 
 ---
 
 ## 📌 Project Structure
 ```
-├── dags/                                 # Airflow DAGs folder
-│   ├── amzn_forecast_pipeline.py         # DAG definition
-├── data/                                 # Data storage
-│   ├── extracted_data.csv                # Raw stock data from API
-│   ├── processed_data.csv                # Preprocessed dataset with indicators
-│   ├── predictions.csv                   # Model predictions
-│   ├── model_metrics.csv                 # Model performance metrics (R², MSE, MAE)
-│   ├── plots/                            # Visualization output
-│   │   ├── amzn_predictions.png          # Plot of actual vs predicted prices
-├── models/                               # Trained ML models
-│   ├── amzn_model.pkl                    # Saved model
-├── scripts/                              # Python scripts for each pipeline step
-│   ├── extract_data.py                   # Fetches AMZN stock data from API
-│   ├── preprocess_data.py                # Processes stock data & computes indicators
-│   ├── train_model.py                    # Trains HGBR model with GridSearchCV
-│   ├── predict.py                        # Generates AMZN stock price predictions
-│   ├── visualize_predictions.py          # Creates comparison plot with test metrics
-├── docker-compose.yaml                   # Docker configuration for Airflow
-├── requirements.txt                      # Python dependencies
-└── README.md                             # Project documentation
+├── dags/                          # Airflow DAGs
+│   ├── amzn_forecast_pipeline.py  # DAG definition
+├── data/                          # Data storage
+│   ├── extracted_data.csv         # Raw stock data
+│   ├── processed_data.csv         # Preprocessed dataset
+│   ├── predictions.csv            # Stock price predictions
+│   ├── model_metrics.csv          # Performance metrics (R², MSE, MAE)
+│   ├── plots/                     # Visualization output
+│   │   ├── amzn_predictions.png   # Actual vs. predicted prices
+├── models/                        # Trained ML models
+│   ├── amzn_model.pkl             # Saved model
+├── scripts/                       # Python scripts
+│   ├── extract_data.py            # Fetches AMZN stock data
+│   ├── preprocess_data.py         # Processes stock data
+│   ├── train_model.py             # Trains HGBR model
+│   ├── predict.py                 # Generates predictions
+│   ├── visualize_predictions.py   # Plots results
+├── docker-compose.yaml            # Docker setup
+├── requirements.txt               # Dependencies
+└── README.md                      # Documentation
 ```
 
 ---
 
 ## 📌 Pipeline Workflow
-This **end-to-end forecasting pipeline** is orchestrated in **Apache Airflow**:
+This **end-to-end ML pipeline** runs in **Apache Airflow**:
 
-1️⃣ **Extract Data** → Fetch AMZN stock data from Alpha Vantage API (`extract_data.py`).  
-2️⃣ **Preprocess Data** → Clean data, generate technical indicators (`preprocess_data.py`).  
-3️⃣ **Train Model** → Train HGBR model with hyperparameter tuning (`train_model.py`).  
-4️⃣ **Make Predictions** → Predict stock closing prices (`predict.py`).  
-5️⃣ **Visualize Results** → Generate a plot with actual vs predicted values (`visualize_predictions.py`).  
+1️⃣ **Extract Data** → Fetch AMZN stock data (`extract_data.py`).  
+2️⃣ **Preprocess Data** → Clean data, compute indicators (`preprocess_data.py`).  
+3️⃣ **Train Model** → Train HGBR with hyperparameter tuning (`train_model.py`).  
+4️⃣ **Make Predictions** → Predict stock prices (`predict.py`).  
+5️⃣ **Visualize Results** → Generate plots and model evaluation (`visualize_predictions.py`).  
 
-Airflow DAG Execution Order:
+Airflow DAG execution order:
 ```
 extract_data >> preprocess_data >> train_model >> predict >> visualize_predictions
 ```
@@ -84,7 +84,7 @@ docker-compose up -d  # Start Airflow services
 ```
 
 ### 3️⃣ Access Airflow Web UI
-Once containers are running, access the Airflow UI:
+Once running, open:
 ```
 http://localhost:8080
 ```
@@ -93,61 +93,84 @@ http://localhost:8080
 
 ### 4️⃣ View Results
 Once the DAG completes:
-- **Check Predictions:** `data/predictions.csv`
-- **Check Model Metrics:** `data/model_metrics.csv`
-- **View Visualization:** `data/plots/amzn_predictions.png`
+- **Predictions:** `data/predictions.csv`
+- **Model Metrics:** `data/model_metrics.csv`
+- **Visualization:** `data/plots/amzn_predictions.png`
 
 ---
 
 ## 📌 Model Performance Evaluation
-The model is evaluated on **20% test data**, with the following metrics:
+Evaluated on **20% test data**, key metrics include:
+- **R² Score**: Accuracy of predictions.
+- **MSE (Mean Squared Error)**: Error magnitude.
+- **MAE (Mean Absolute Error)**: Average deviation.
 
-💊 **Metrics Stored in `data/model_metrics.csv`**  
-- **R² Score (R²)**: Measures model accuracy.
-- **Mean Squared Error (MSE)**: Measures prediction error.
-- **Mean Absolute Error (MAE)**: Measures average deviation from actual price.
-
-These metrics are **displayed on the final visualization**, centered at the top of the plot.
+Metrics are **displayed on the visualization**, centered at the top.
 
 ---
 
-## 📌 Dependencies
-Ensure dependencies are installed:
+## 📌 Dependency Management with Docker
+You **do not need to install dependencies manually**. Docker Compose installs them inside the container:
+
+```yaml
+airflow_worker:
+  container_name: airflow_worker
+  <<: *airflow-common
+  command: celery worker
+  restart: always
+  depends_on:
+    airflow_init:
+      condition: service_completed_successfully
+  entrypoint: >
+    sh -c "pip install -r /opt/airflow/requirements.txt && exec airflow celery worker"
+```
+
+### ❌ No Need for Manual Installation
+Do **not** run:
 ```bash
 pip install -r requirements.txt
 ```
-Required libraries:
-```plaintext
-apache-airflow
-apache-airflow-providers-docker
-pandas
-numpy
-scikit-learn
-matplotlib
-requests
+This is already handled inside the Docker container.
+
+### ⚠️ When to Install Manually?
+Only if:
+- Running scripts **outside Docker**.
+- Adding a new library **without restarting containers**.
+
+Manual install:
+```bash
+pip install -r requirements.txt
 ```
+
+### 🚀 Conclusion
+With Docker Compose, dependencies are fully managed **inside the container**. To start the project:
+```bash
+docker-compose up -d
+```
+
+🔹 **Your Airflow pipeline is fully functional inside the Docker environment!** 🚀
 
 ---
 
 ## 📌 Example Visualization Output
-Once the pipeline runs successfully, it generates the following **comparison plot**:
+The pipeline generates a **comparison plot**:
 
 ![AMZN Stock Prediction](data/plots/amzn_predictions.png)
 
-The plot **includes model performance metrics (R², MSE, MAE) at the top**.
+Metrics **(R², MSE, MAE)** are displayed at the top.
 
 ---
 
 ## 📌 Future Improvements
-🚀 **Enhancements for future versions:**
-- Add **hyperparameter optimization** using Bayesian Search.
-- Incorporate **additional market indicators** like Bollinger Bands.
-- Implement **deep learning models (LSTM, Transformer)** for improved forecasting.
+🚀 **Next steps:**
+- Optimize hyperparameters using **Bayesian Search**.
+- Add more **market indicators** (e.g., Bollinger Bands).
+- Implement **LSTM/Transformer models** for better forecasting.
 
 ---
 
 ## 📌 License
-This project is open-source and available under the **MIT License**.
+This project is open-source under the **MIT License**.
 
 ---
 
