@@ -35,7 +35,7 @@ To use the API, get a **free API key** from [Alpha Vantage](https://www.alphavan
 │   ├── extracted_data.csv                # Raw stock data from API
 │   ├── processed_data.csv                # Preprocessed dataset with indicators
 │   ├── predictions.csv                   # Model predictions
-│   ├── model_metrics.csv                 # Model performance metrics (Test R², MSE, MAE)
+│   ├── model_metrics.csv                 # Model performance metrics (R², MSE, MAE)
 │   ├── plots/                            # Visualization output
 │   │   ├── amzn_predictions.png          # Plot of actual vs predicted prices
 ├── models/                               # Trained ML models
@@ -73,7 +73,7 @@ extract_data >> preprocess_data >> train_model >> predict >> visualize_predictio
 
 ### 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/FranRguezCer/amzn-stock-forecast.git
+git clone https://github.com/FranRguezCer/amzn-stocks-predictions-airflow.git
 cd amzn-stock-forecast
 ```
 
