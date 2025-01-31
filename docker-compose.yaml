@@ -1,5 +1,3 @@
-version: "3.8"
-
 x-airflow-common:
   &airflow-common
   image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.10.4}
@@ -17,8 +15,7 @@ x-airflow-common:
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
-    - ./data:/opt/airflow/data
-    - ./data/plots:/opt/airflow/data/plots
+    - ./plots:/opt/airflow/plots
     - ./models:/opt/airflow/models
     - ./scripts:/opt/airflow/scripts
     - ./requirements.txt:/opt/airflow/requirements.txt
@@ -31,57 +28,12 @@ x-airflow-common:
       condition: service_healthy
 
 services:
-  airflow_postgres:
-    container_name: airflow_postgres
-    image: postgres:13
-    environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
-    volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "airflow"]
-      interval: 10s
-      retries: 5
-      start_period: 5s
-    restart: always
-
-  airflow_redis:
-    container_name: airflow_redis
-    image: redis:7.2-bookworm
-    expose:
-      - 6379
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 30s
-      retries: 50
-      start_period: 30s
-    restart: always
-
   airflow_web:
     container_name: airflow_web
     <<: *airflow-common
     command: webserver
     ports:
       - "8080:8080"
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow_init:
-        condition: service_completed_successfully
-
-  airflow_scheduler:
-    container_name: airflow_scheduler
-    <<: *airflow-common
-    command: scheduler
     restart: always
     depends_on:
       <<: *airflow-common-depends-on
@@ -99,12 +51,13 @@ services:
     entrypoint: >
       sh -c "pip install -r /opt/airflow/requirements.txt && exec airflow celery worker"
 
-  airflow_triggerer:
-    container_name: airflow_triggerer
+  airflow_scheduler:
+    container_name: airflow_scheduler
     <<: *airflow-common
-    command: triggerer
+    command: scheduler
     restart: always
     depends_on:
+      <<: *airflow-common-depends-on
       airflow_init:
         condition: service_completed_successfully
 
@@ -115,8 +68,8 @@ services:
     command:
       - -c
       - |
-        mkdir -p /opt/airflow/logs /opt/airflow/dags /opt/airflow/data /opt/airflow/models /opt/airflow/data/plots /opt/airflow/scripts
-        chown -R "${AIRFLOW_UID}:0" /opt/airflow/{logs,dags,data,models,data/plots,scripts}
+        mkdir -p /opt/airflow/logs /opt/airflow/dags /opt/airflow/plots /opt/airflow/scripts /opt/airflow/models
+        chown -R "${AIRFLOW_UID}:0" /opt/airflow/{logs,dags,plots,scripts,models}
         exec /entrypoint airflow db upgrade
         airflow users create --username airflow --firstname Admin --lastname User --role Admin --email admin@example.com --password airflow
     environment:
@@ -126,6 +79,38 @@ services:
       _AIRFLOW_WWW_USER_USERNAME: airflow
       _AIRFLOW_WWW_USER_PASSWORD: airflow
     user: "0:0"
+
+  airflow_postgres:
+    container_name: airflow_postgres
+    image: postgres:13
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+    ports:
+      - "5432:5432"
+
+  airflow_redis:
+    container_name: airflow_redis
+    image: redis:7.2-bookworm
+    expose:
+      - 6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 50
+      start_period: 30s
+    restart: always
 
 volumes:
   postgres-db-volume:
