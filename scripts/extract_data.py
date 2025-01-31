@@ -3,7 +3,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 # API key for Alpha Vantage
-API_KEY = "O3F4FVGG5HO2W68M"
+API_KEY = "your_API_key"
 # Stock symbol to fetch data for
 SYMBOL = "AMZN"
 # PostgreSQL database connection string
