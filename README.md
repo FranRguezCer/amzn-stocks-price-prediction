@@ -126,6 +126,57 @@ Once the DAG completes execution:
 
 ---
 
+## 📌 Querying Data in PostgreSQL
+
+All extracted, processed, and predicted data is stored in **PostgreSQL**. You can inspect the database using the command line.
+
+### 1️⃣ Access the PostgreSQL Container
+To interact with the database, first access the **PostgreSQL** container:
+
+```bash
+docker exec -it airflow_postgres psql -U airflow -d airflow
+```
+
+### 2️⃣ List Available Tables
+Once inside the PostgreSQL shell, run:
+
+```bash
+\dt
+```
+
+This will list all tables, including:
+- `stock_data` → Raw stock market data.
+- `processed_data` → Data with computed technical indicators.
+- `predictions` → Model predictions.
+- `model_metrics` → Stored model performance metrics.
+
+### 3️⃣ Query Table Contents
+To view the first 10 rows of any table:
+
+```bash
+SELECT * FROM stock_data LIMIT 10;
+```
+
+Replace `stock_data` with any other table name (`processed_data`, `predictions`, etc.).
+
+### 4️⃣ Check Record Count
+To see how many records a table contains:
+
+```bash
+SELECT COUNT(*) FROM predictions;
+```
+
+### 5️⃣ Exit the PostgreSQL Shell
+Once done, exit PostgreSQL with:
+
+```bash
+\q
+```
+
+This allows you to verify data flow across different pipeline stages inside the database.
+
+---
+
 ## 📌 Model Performance Evaluation
 Evaluated on **20% test data**, key metrics include:
 - **R² Score**: Accuracy of predictions.
